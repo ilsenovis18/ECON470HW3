@@ -4,20 +4,33 @@ author: "Ilse Novis"
 date: "3/19/2025"
 format: pdf
 execute:
-  echo: true
+  echo: false
+header-includes:
+  - \usepackage{setspace}
+  - \usepackage{graphicx}
+  - \usepackage{booktabs}
+  - \usepackage{caption}
+  - \usepackage{lmodern}
 ---
- \newpage
- \begin{center}
-# ECON 470 Homework 3-2 Answers 
-# **Summary Statistics**  
-\end{center}
+
+::: {.latex}
 \newpage
+\thispagestyle{empty}
+\vspace*{\fill}
+\begin{center}
+    \Huge \textbf{Summary Statistics}
+\end{center}
+\vspace*{\fill}
+\newpage
+:::
+
 
 ```{python}
 import pandas as pd
 import numpy as np
+import matplotlib.pyplot as plt
 import statsmodels.api as sm
-import matplotlib.pyplot as pltimport 
+from tabulate import tabulate  # For formatting tables
 import statsmodels.formula.api as smf
 ```
 
@@ -26,9 +39,8 @@ data_path = "/Users/ilsenovis/Documents/GitHub/ECON470HW3/data/output/TaxBurden_
 df = pd.read_csv(data_path)
 ```
 
-\begin{center}
-## **Question 1:** Proportion of States with Tax Change (1970-1985)
-\end{center}
+## Question 1: Proportion of States with Tax Change (1970-1985)
+
 ```{python}
 df_q1 = df.copy()
 df_q1 = df_q1[(df_q1['Year'] >= 1970) & (df_q1['Year'] <=1985)]
@@ -45,11 +57,13 @@ plt.xticks(rotation=45)
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.show()
 ```
-\newpage
 
-\begin{center}
-## **Question 2:** Average Tax and Price Trends (1970-2018)
-\end{center}
+::: {.latex}
+\newpage
+:::
+
+## Question 2: Average Tax and Price Trends (1970-2018)
+
 ```{python}
 df_q2 = df.copy()
 df_q2 = df_q2[(df_q2['Year'] >= 1970) & (df_q2['Year'] <=2018)]
@@ -67,11 +81,13 @@ plt.legend()
 plt.grid(True, linestyle='--', alpha=0.7)
 plt.show()
 ```
-\newpage
 
-\begin{center}
-## **Question 3:** Top 5 States with Highest Price Increase (1970-2018)
-\end{center}
+::: {.latex}
+\newpage
+:::
+
+## Question 3: Top 5 States with Highest Price Increase (1970-2018)
+
 ```{python}
 df_q3 = df.copy()
 df_q3 = df_q3[(df_q3['Year'] >= 1970) & (df_q3['Year'] <= 2018)]
@@ -93,11 +109,13 @@ plt.legend(title='State')
 plt.grid(True, linestyle='--', alpha=0.7)
 plt.show()
 ```
-\newpage
 
-\begin{center}
-## **Question 4:** Bottom 5 States with Lowest Price Increase (1970-2018)
-\end{center}
+::: {.latex}
+\newpage
+:::
+
+## Question 4: Bottom 5 States with Lowest Price Increase (1970-2018)
+
 ```{python}
 df_q4 = df.copy()
 df_q4 = df_q4[(df_q4['Year'] >= 1970) & (df_q4['Year'] <= 2018)]
@@ -119,81 +137,63 @@ plt.legend(title='State')
 plt.grid(True, linestyle='--', alpha=0.7)
 plt.show()
 ```
+
+::: {.latex}
 \newpage
+:::
 
-\begin{center}
-## **Question 5:** Compare the trends in sales from the 5 states with the highest price increases to those with the lowest price increases.
-\end{center}
+## Question 5: Compare the Trends in Sales
+
 ```{python}
-# Create seperate copy for this question
-df_q5 = df.copy()
-
-# Filter for years 1970-2018
-df_q5 = df_q5[(df_q5['Year'] >= 1970) & (df_q5['Year'] <= 2018)]
-
 # Compute the first and last cigarette price for each state
-price_change = df_q5.groupby("state")["price_cpi"].agg(["first", "last"])
+price_change = df.groupby("state")["price_cpi"].agg(["first", "last"])
 price_change["price_increase"] = price_change["last"] - price_change["first"]
 
 # Identify the 5 states with the highest price increase
 top_5_states = price_change.nlargest(5, "price_increase").index.tolist()
-#print("Top 5 states with highest price increase:", top_5_states)
 
 # Identify the 5 states with the lowest price increase
 bottom_5_states = price_change.nsmallest(5, "price_increase").index.tolist()
-#print("Bottom 5 states with lowest price increase:", bottom_5_states)
-
-# Filter the dataset for these states only
-df_q5_top = df_q5[df_q5["state"].isin(top_5_states)]
-df_q5_bottom = df_q5[df_q5["state"].isin(bottom_5_states)]
 
 # Compute the average packs sold per capita for each group
-avg_sales_top = df_q5_top.groupby('Year')['sales_per_capita'].mean()
-avg_sales_bottom = df_q5_bottom.groupby('Year')['sales_per_capita'].mean()
+avg_sales_top = df[df["state"].isin(top_5_states)].groupby('Year')['sales_per_capita'].mean()
+avg_sales_bottom = df[df["state"].isin(bottom_5_states)].groupby('Year')['sales_per_capita'].mean()
 
 # Plot the trends for both groups
 plt.figure(figsize=(10, 6))
-plt.plot(avg_sales_top.index, avg_sales_top, label='Top 5 States (Highest Price Increase)', 
-         color='orange', linewidth=2)
-plt.plot(avg_sales_bottom.index, avg_sales_bottom, label='Top 5 States (Lowest Price Increase)', 
-         color='pink', linestyle='--', linewidth=2)  # Dashed line for bottom 5 states
-
-# Format Graph
+plt.plot(avg_sales_top.index, avg_sales_top, label='Top 5 States (Highest Price Increase)', color='orange', linewidth=2)
+plt.plot(avg_sales_bottom.index, avg_sales_bottom, label='Top 5 States (Lowest Price Increase)', color='pink', linestyle='--', linewidth=2)
 plt.xlabel('Year')
 plt.ylabel('Packs Sold Per Capita')
 plt.title('Comparison of Cigarette Sales: Highest vs Lowest Price Increases (1970-2018)')
 plt.legend(title="Group")
 plt.grid(True, linestyle='--', alpha=0.7)
-
-# Show plot
 plt.show()
 ```
 
+::: {.latex}
+\newpage
+\thispagestyle{empty}
+\vspace*{\fill}
 \begin{center}
-\newpage
-# **Estimate ATEs:**
+    \Huge \textbf{Estimate ATEs}
 \end{center}
+\vspace*{\fill}
 \newpage
+:::
 
-\begin{center}
-## **Question 9:** Repeat questions 1-3 focusing on the period from 1991 to 2015.
-\end{center}
-### **Question 9.1** Bar graph showing the proportion of states with a change in their cigarette tax
+## Question 9: Repeat questions 1-3 focusing on the period from 1991 to 2015
+
+### Question 9.1: Proportion of States with a Change in Their Cigarette Tax
 
 ```{python}
-# Create seperate copy for this question
 df_q9 = df.copy()
-
-# Filter for years 1991-2015
 df_q9 = df_q9[(df_q9['Year'] >= 1991) & (df_q9['Year'] <= 2015)]
-
-# ---- Question 1: Proportion of States with a Tax Change (1991-2015) ---- #
 df_q9_q1 = df_q9.copy()
 df_q9_q1 = df_q9_q1.sort_values(by=['state', 'Year'])
 df_q9_q1['tax_change'] = df_q9_q1.groupby('state')['tax_state'].diff().ne(0)
 tax_change_proportion_q9 = df_q9_q1.groupby('Year')['tax_change'].mean()
 
-# Plot bar graph
 plt.figure(figsize=(10, 6))
 tax_change_proportion_q9.plot(kind='bar', color='skyblue', edgecolor='black')
 plt.xlabel('Year')
@@ -203,26 +203,20 @@ plt.xticks(rotation=45)
 plt.grid(axis='y', linestyle='--', alpha=0.7)
 plt.show()
 ```
+
+::: {.latex}
 \newpage
+:::
 
-\begin{center}
-## **Question 9:** Repeat questions 1-3 focusing on the period from 1991 to 2015.
-\end{center}
-### **Question 9.2** Average tax (in 2012 dollars) on cigarettes and the average price of a pack of cigarettes from 1991 to 2015
+### Question 9.2: Average Tax and Price Trends (1991-2015)
+
 ```{python}
-# ---- Question 2: Average Tax & Price Per Pack (1991-2015) ---- #
-df_q9_q2 = df_q9.copy()
+avg_tax_per_year_q9 = df_q9.groupby('Year')['tax_2012'].mean()
+avg_price_per_year_q9 = df_q9.groupby('Year')['price_cpi'].mean()
 
-# Compute yearly averages for tax and price (already adjusted for 2012 dollars in data-code)
-avg_tax_per_year_q9 = df_q9_q2.groupby('Year')['tax_2012'].mean()
-avg_price_per_year_q9 = df_q9_q2.groupby('Year')['price_cpi'].mean()
-
-# Plot both on the same graph
 plt.figure(figsize=(10, 6))
 plt.plot(avg_tax_per_year_q9, label='Average Tax per Pack (2012 Dollars)', color='green', linewidth=2)
 plt.plot(avg_price_per_year_q9, label='Average Price per Pack (2012 Dollars)', color='purple', linewidth=2)
-
-# Graph formatting
 plt.xlabel('Year')
 plt.ylabel('Dollars per Pack')
 plt.title('Average Cigarette Tax & Price per Pack (1991-2015, Adjusted to 2012 Dollars)')
@@ -230,36 +224,23 @@ plt.legend()
 plt.grid(True, linestyle='--', alpha=0.7)
 plt.show()
 ```
+
+::: {.latex}
 \newpage
+:::
 
-\begin{center}
-## **Question 9:** Repeat questions 1-3 focusing on the period from 1991 to 2015.
-\end{center}
-### **Question 9.3:** Identify the 5 states with the highest increases in cigarette prices (in dollars) over the time period. Plot the average number of packs sold per capita for those states from 1991 to 2015
+### Question 9.3: Top 5 States with Highest Price Increase (1991-2015)
+
 ```{python}
-# ---- Question 3: Top 5 States with Highest Price Increase (1991-2015) ---- #
-df_q9_q3 = df_q9.copy()
-
-# Compute the first and last cigarette price for each state
-price_change_q9 = df_q9_q3.groupby("state")["price_cpi"].agg(["first", "last"])
+price_change_q9 = df_q9.groupby("state")["price_cpi"].agg(["first", "last"])
 price_change_q9["price_increase"] = price_change_q9["last"] - price_change_q9["first"]
-
-# Identify the 5 states with the highest price increase
 top_5_states_q9 = price_change_q9.nlargest(5, "price_increase").index.tolist()
-#print("Top 5 states with highest price increase (1991-2015):", top_5_states_q9)
-
-# Filter the dataset for these states only
-df_q9_q3 = df_q9_q3[df_q9_q3["state"].isin(top_5_states_q9)]
-
-# Compute the average packs sold per capita for these states each year
+df_q9_q3 = df_q9[df_q9["state"].isin(top_5_states_q9)]
 avg_sales_per_year_q9 = df_q9_q3.groupby(["Year", "state"])["sales_per_capita"].mean().unstack()
 
-# Plot the trend for each of the top 5 states
 plt.figure(figsize=(10, 6))
 for state in top_5_states_q9:
     plt.plot(avg_sales_per_year_q9.index, avg_sales_per_year_q9[state], label=state)
-
-# Graph formatting
 plt.xlabel('Year')
 plt.ylabel('Packs Sold Per Capita')
 plt.title('Average Cigarette Packs Sold Per Capita (Top 5 States with Highest Price Increase, 1991-2015)')
@@ -267,12 +248,103 @@ plt.legend(title="State")
 plt.grid(True, linestyle="--", alpha=0.7)
 plt.show()
 ```
+
+::: {.latex}
 \newpage
+:::
 
-\begin{center}
-## **Question 10:** Compare Elasticity estimates from 1970-1990 versus those from 1991-2015 (Q6-9). Are they different? If so, why?
-\end{center}
+## Question 10: Compare Elasticity Estimates from 1970-1990 vs. 1991-2015
+
 ```{python}
+# Prepare Data
+df["log_sales"] = np.log(df["sales_per_capita"])
+df["log_price"] = np.log(df["price_cpi"])
+df["log_tax"] = np.log(df["tax_dollar"])
 
+# Subset for Different Time Periods
+df_1970_1990 = df[(df["Year"] >= 1970) & (df["Year"] <= 1990)].dropna()
+df_1991_2015 = df[(df["Year"] >= 1991) & (df["Year"] <= 2015)].dropna()
+
+# OLS and IV Regressions
+ols_1970_1990 = smf.ols("log_sales ~ log_price", data=df_1970_1990).fit()
+ols_1991_2015 = smf.ols("log_sales ~ log_price", data=df_1991_2015).fit()
+
+iv_1970_1990 = smf.ols("log_sales ~ log_price + log_tax", data=df_1970_1990).fit()
+iv_1991_2015 = smf.ols("log_sales ~ log_price + log_tax", data=df_1991_2015).fit()
+
+# First-Stage Regressions
+first_stage_1970_1990 = smf.ols("log_price ~ log_tax", data=df_1970_1990).fit()
+first_stage_1991_2015 = smf.ols("log_price ~ log_tax", data=df_1991_2015).fit()
+
+# Reduced-Form Regressions
+reduced_form_1970_1990 = smf.ols("log_sales ~ log_tax", data=df_1970_1990).fit()
+reduced_form_1991_2015 = smf.ols("log_sales ~ log_tax", data=df_1991_2015).fit()
+
+# Store results
+results = {
+    "Log Price": {
+        "Estimate": [ols_1970_1990.params["log_price"], iv_1970_1990.params["log_price"],
+                     ols_1991_2015.params["log_price"], iv_1991_2015.params["log_price"]],
+        "SE": [ols_1970_1990.bse["log_price"], iv_1970_1990.bse["log_price"],
+               ols_1991_2015.bse["log_price"], iv_1991_2015.bse["log_price"]],
+        "N": [ols_1970_1990.nobs, iv_1970_1990.nobs, ols_1991_2015.nobs, iv_1991_2015.nobs],
+        "R²": [ols_1970_1990.rsquared, iv_1970_1990.rsquared,
+               ols_1991_2015.rsquared, iv_1991_2015.rsquared]
+    },
+    "Reduced Form (Log Tax)": {
+    "Estimate": [reduced_form_1970_1990.params["log_tax"], reduced_form_1991_2015.params["log_tax"]],
+    "SE": [reduced_form_1970_1990.bse["log_tax"], reduced_form_1991_2015.bse["log_tax"]],
+    "N": [reduced_form_1970_1990.nobs, reduced_form_1991_2015.nobs],
+    "R²": [reduced_form_1970_1990.rsquared, reduced_form_1991_2015.rsquared]
+    },
+"First Stage (Log Tax)": {
+    "Estimate": [first_stage_1970_1990.params["log_tax"], first_stage_1991_2015.params["log_tax"]],
+    "SE": [first_stage_1970_1990.bse["log_tax"], first_stage_1991_2015.bse["log_tax"]],
+    "N": [first_stage_1970_1990.nobs, first_stage_1991_2015.nobs],
+    "R²": [first_stage_1970_1990.rsquared, first_stage_1991_2015.rsquared]
+    }
+
+}
+
+# Convert results to DataFrame for tabular output
+regression_df = {section: pd.DataFrame(data).T for section, data in results.items()}
+
+#print(regression_df)
 ```
 
+
+\begin{table}[h]
+\centering
+\caption{Elasticity Estimates from OLS and IV}
+\begin{tabular}{lcccc}
+\hline
+                 & \multicolumn{2}{c}{1970-1990} & \multicolumn{2}{c}{1991-2015} \\
+                 & OLS   & IV    & OLS   & IV    \\
+\hline
+\textbf{Estimates} \\
+Log Price       & -0.809 & -0.626 & -0.997 & -0.231 \\
+(SE)           & (0.038) & (0.062) & (0.025) & (0.064) \\
+N              & 1,071   & 1,071   & 1,275   & 1,275   \\
+R²             & 0.294    & 0.303    & 0.561    & 0.612    \\
+\hline
+\textbf{Reduced Form} \\
+Log Tax       & ~ & -0.307 & ~ & -0.480  \\
+(SE)         & ~ & (0.017) & ~ & (0.011)  \\
+N            & ~ & 1,071 & ~ & 1,275   \\
+R²          & ~ & 0.236  & ~ & 0.608   \\
+\hline
+\textbf{First Stage} \\
+Log Tax       & ~ & 0.333 & ~ & 0.432  \\
+(SE)         & ~ & (0.008) & ~ & (0.005) \\
+N            & ~ & 1,071   & ~ & 1,275   \\
+R²           & ~ & 0.617    & ~ & 0.868    \\
+\hline
+\end{tabular}
+\end{table}
+
+### Interpretation of Results
+The regression results show that cigarette demand became **more price-sensitive over time**. The **OLS estimates** indicate that from **1970-1990**, a **1% increase in price reduced sales by 0.81%**, while in **1991-2015**, the decline was **0.997%**. However, the **Instrumental Variables (IV) estimates**, which account for potential price endogeneity, show a lower elasticity of **-0.626 in 1970-1990** and **-0.231 in 1991-2015**, suggesting that tax-driven price changes had a weaker effect on consumption.  
+
+The **Reduced Form regression** confirms that higher cigarette taxes led to greater sales declines in **1991-2015 (-0.480)** than in **1970-1990 (-0.307)**. The **First Stage regression** shows that a **1% tax increase raised prices by 0.33% in 1970-1990 and 0.43% in 1991-2015**, with taxes becoming a **stronger predictor of price over time (R² = 0.87 in later years)**.  
+
+Overall, **taxes have become a more effective tool for reducing cigarette consumption**. The stronger price-sales relationship in later years suggests **increased consumer responsiveness, possibly due to stricter regulations, industry pricing strategies, or heightened awareness of smoking risks**.
